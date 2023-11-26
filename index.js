@@ -35,19 +35,25 @@ app.post('/article', async(req,res)=>{
     const result = await articleCollection.insertOne(article)
     res.send(result)
 })
-
+// aricle by id
 app.get('/article/:id',async(req,res)=>{
 const id = req.params.id
 const result = await articleCollection.findOne({_id:new ObjectId(id)})
 res.send(result)
 });
 
+// article delete by id
+app.delete('/article/:id',async (req,res)=> {
+  const id = req.params.id
+  const result = await articleCollection.deleteOne({_id: new ObjectId(id)})
+  res.send(result)
+})
+
+// all article
 app.get('/article',async(req,res)=>{
   try{
     const {search,publisher,tags}=req.query;
-    // console.log('Search:', search);
-    // console.log('Publisher:', publisher);
-    // console.log('Tags:', tags);
+
     let filter = {};
     if (search) {
       filter.title = { $regex: new RegExp(search, 'i') };
@@ -68,6 +74,50 @@ app.get('/article',async(req,res)=>{
   res.status(500).json({error:"internal server error"})
 }
 })
+// view per article
+app.put('/article/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await articleCollection.updateOne(
+      { _id:new ObjectId(id) },
+      { $inc: { views: 1 } }
+    );
+
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    res.json({ message: 'View count updated successfully' });
+  } catch (error) {
+    console.error('Error updating view count:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
+});
+// trending
+app.get('/trending', async (req, res) => {
+  try {
+    const trendingArticles = await articleCollection
+      .aggregate([
+        {
+          $group: {
+            _id: '$_id',
+            title: { $first: '$title' },
+            views: { $sum: '$views' },
+          },
+        },
+        { $sort: { views: -1 } },
+      ])
+      .toArray();
+
+    res.json(trendingArticles);
+  } catch (error) {
+    console.error('Error fetching trending articles:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
