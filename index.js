@@ -29,6 +29,8 @@ async function run() {
     // await client.connect();
    const articleCollection = client.db("Newspaper").collection("article")
    const userCollection = client.db("Newspaper").collection("users")
+  const publisherCollection = client.db("Newspaper").collection("publisher")
+
 
 
   //jwt
@@ -133,12 +135,6 @@ app.patch('/article/premium/:id',async(req,res)=>{
     res.send(result)
 })
 
-
-
-
-
-
-
 app.post('/users',async(req,res)=>{
   const user = req.body
   const query = {email:user.email}
@@ -153,6 +149,12 @@ app.post('/users',async(req,res)=>{
 app.post('/article', async(req,res)=>{
     const article = req.body
     const result = await articleCollection.insertOne(article)
+    res.send(result)
+})
+// publisher name and logo post from frontend
+app.post('/publishers',async(req,res)=>{
+  const publishers = req.body
+    const result = await publisherCollection.insertOne(publishers)
     res.send(result)
 })
 // aricle by id
