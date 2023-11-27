@@ -102,7 +102,20 @@ app.patch('/article/approve/:id',async(req,res)=>{
     res.send(result)
 })
 
-
+// decline a article
+app.patch('/article/decline/:id',async(req,res)=>{
+  const id = req.params.id;
+  const reason = req.body.reason
+  const filter ={ _id : new ObjectId(id)}
+  const updateDoc = {
+    $set:{
+      Decline:true,
+      declineReason: reason
+    }
+    }
+    const result = await articleCollection.updateOne(filter,updateDoc)
+    res.send(result)
+})
 
 
 
