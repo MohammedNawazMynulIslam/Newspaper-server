@@ -117,8 +117,21 @@ app.patch('/article/decline/:id',async(req,res)=>{
     res.send(result)
 })
 
+// promoted to premium
 
+app.patch('/article/premium/:id',async(req,res)=>{
+  const id = req.params.id;
 
+  const filter ={ _id : new ObjectId(id)}
+  const updateDoc = {
+    $set:{
+      isPremium:true
+
+    }
+    }
+    const result = await articleCollection.updateOne(filter,updateDoc)
+    res.send(result)
+})
 
 
 
