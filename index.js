@@ -48,6 +48,21 @@ app.delete('/article/:id',async (req,res)=> {
   const result = await articleCollection.deleteOne({_id: new ObjectId(id)})
   res.send(result)
 })
+// article update title
+app.put("/article/:id", async (req, res) => {
+  const id = {_id:new ObjectId(req.params.id)}
+  const body = req.body;
+  const updateArticle ={
+    $set:{
+      ...body
+    }
+  }
+const option = {upsert:true}
+const result = await articleCollection.updateOne(id,updateArticle,option)
+// console.log(body)
+res.send(result);
+
+});
 
 // all article
 app.get('/article',async(req,res)=>{
@@ -95,6 +110,7 @@ app.put('/article/:id/view', async (req, res) => {
   }
 
 });
+
 // trending
 app.get('/trending', async (req, res) => {
   try {
