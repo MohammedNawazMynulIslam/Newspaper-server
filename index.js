@@ -59,7 +59,7 @@ async function run() {
   }
   // verify admin
 // users api
-app.get('/users' ,verifyToken, async(req,res)=>{
+app.get('/users', async(req,res)=>{
   console.log(req.headers);
   const usersList = await userCollection.find().toArray();
   res.send(usersList)
@@ -90,6 +90,19 @@ app.patch('/users/admin/:id',async(req,res)=>{
   const result = await userCollection.updateOne(filter,updatedDoc)
   res.send(result)
 })
+//  make subscribe user
+app.patch('/users/subscribe/:id',async(req,res)=>{
+  const id = req.params.id
+  const filter = {_id:new ObjectId(id)}
+  const updatedDoc={
+    $set:{
+      premiumTaken:new Date() ,
+    }
+  }
+  const result = await userCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
+
 // approve a article
 
 app.patch('/article/approve/:id',async(req,res)=>{
@@ -157,6 +170,12 @@ app.post('/publishers',async(req,res)=>{
     const result = await publisherCollection.insertOne(publishers)
     res.send(result)
 })
+// get all publishers
+app.get('/publishers',async (req,res)=>{
+  const result = await publisherCollection.find().toArray()
+  res.send(result)
+  })
+
 // aricle by id
 app.get('/article/:id',async(req,res)=>{
 const id = req.params.id
