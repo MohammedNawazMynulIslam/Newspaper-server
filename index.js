@@ -104,7 +104,6 @@ app.patch('/users/subscribe/:id',async(req,res)=>{
 })
 
 // approve a article
-
 app.patch('/article/approve/:id',async(req,res)=>{
   const id = req.params.id;
   const filter ={ _id : new ObjectId(id)}
@@ -115,6 +114,27 @@ app.patch('/article/approve/:id',async(req,res)=>{
     }
     const result = await articleCollection.updateOne(filter,updateDoc)
     res.send(result)
+})
+// get approved articles only with filter and search
+app.get('/article/approve',async(req,res)=>{
+  try {
+    const { search, publisher, tags } = req.query;
+
+    const filter = {
+      isApproved: true,
+      ...(search && { title: { $regex: new RegExp(search, 'i') } }),
+      ...(publisher && { publisher }),
+      ...(tags && { tags: { $in: Array.isArray(tags) ? tags : [tags] } }),
+    };
+
+    const result = await articleCollection.find(filter).toArray();
+    res.send(result);
+  } catch (error) {
+    console.error("Error fetching approved articles", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+
+
 })
 
 // decline a article
@@ -158,6 +178,7 @@ app.post('/users',async(req,res)=>{
   const result = await userCollection.insertOne(user)
   res.send(result)
 })
+
 //    article collec
 app.post('/article', async(req,res)=>{
     const article = req.body
@@ -210,7 +231,7 @@ app.get('/article',async(req,res)=>{
   try{
     const {search,publisher,tags}=req.query;
 
-    let filter = {};
+    let filter = {  };
     if (search) {
       filter.title = { $regex: new RegExp(search, 'i') };
     }
@@ -230,6 +251,31 @@ app.get('/article',async(req,res)=>{
   res.status(500).json({error:"internal server error"})
 }
 })
+
+// all approved article
+// app.get('/article/approved',async(req,res)=>{
+//   try{
+//     const {search,publisher,tags}=req.query;
+
+//     let filter = { isApproved: true };
+//     if (search) {
+//       filter.title = { $regex: new RegExp(search, 'i') };
+//     }
+//     if (publisher) {
+//       filter.publisher = publisher;
+//     }
+//     if (tags) {
+//       filter.tags = { $in: Array.isArray(tags) ? tags : [tags] };
+//     }
+//     // console.log('Filter:', filter);
+//     const result = await articleCollection.find(filter).toArray();
+//     // console.log("mongodb query",result);
+//     res.send(result);
+// }catch(error){
+//   console.error("error fetching",error);
+//   res.status(500).json({error:"internal server error"})
+// }
+// })
 // view per article
 app.put('/article/:id/view', async (req, res) => {
   try {
@@ -238,7 +284,6 @@ app.put('/article/:id/view', async (req, res) => {
       { _id:new ObjectId(id) },
       { $inc: { views: 1 } }
     );
-
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Article not found' });
