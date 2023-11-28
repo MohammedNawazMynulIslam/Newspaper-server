@@ -102,6 +102,39 @@ app.patch('/users/subscribe/:id',async(req,res)=>{
   const result = await userCollection.updateOne(filter,updatedDoc)
   res.send(result)
 })
+// get subscribe user by id
+app.get('/users/subscribe/:id',async(req,res)=>{
+  const id = req.params.id
+  try{
+    const user = await userCollection.findOne({_id: new ObjectId(id)})
+    if(!user){
+      throw 'User not found';
+      }
+      else{
+        res.send(user);
+        }
+        }catch (e){
+          console.log('error in getting the user')
+          res.status(500).send({message: e});
+          }
+          })
+
+// get subscribe user
+app.get('/users/premium', async (req, res) => {
+  try {
+    const premiumUsers = await userCollection.find({ premiumTaken: { $exists: true } }).toArray();
+    res.send(premiumUsers);
+  } catch (error) {
+    console.error("Error fetching premium users", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
+
+
+
 
 // approve a article
 app.patch('/article/approve/:id',async(req,res)=>{
@@ -151,6 +184,26 @@ app.patch('/article/decline/:id',async(req,res)=>{
     const result = await articleCollection.updateOne(filter,updateDoc)
     res.send(result)
 })
+// decline a article get method
+app.get('/articles/declined/:id', async (req, res) => {
+  try {
+    const articleId = req.params.id;
+    const articleWithDeclineReason = await articleCollection
+      .findOne({ _id: new ObjectId(articleId), Decline: true, declineReason: { $exists: true } });
+
+    if (articleWithDeclineReason) {
+      res.json(articleWithDeclineReason);
+    } else {
+      res.status(404).json({ error: 'Article not found or has no decline reason' });
+    }
+  } catch (error) {
+    console.error('Error fetching article with decline reason:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+``
+
+
 
 // promoted to premium
 
