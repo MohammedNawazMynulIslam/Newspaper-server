@@ -59,7 +59,7 @@ async function run() {
   }
   // verify admin
 // users api
-app.get('/users', async(req,res)=>{
+app.get('/users',  async(req,res)=>{
   console.log(req.headers);
   const usersList = await userCollection.find().toArray();
   res.send(usersList)
@@ -79,7 +79,7 @@ app.get('/users/admin/:email',verifyToken,async(req,res)=>{
 res.send({admin})
 })
 // make any user admin
-app.patch('/users/admin/:id',async(req,res)=>{
+app.patch('/users/admin/:id', async(req,res)=>{
   const id = req.params.id
   const filter = {_id:new ObjectId(id)}
   const updatedDoc={
@@ -103,7 +103,7 @@ app.patch('/users/subscribe/:id',async(req,res)=>{
   res.send(result)
 })
 // get subscribe user by id
-app.get('/users/subscribe/:id',async(req,res)=>{
+app.get('/users/subscribe/:id',verifyToken,async(req,res)=>{
   const id = req.params.id
   try{
     const user = await userCollection.findOne({_id: new ObjectId(id)})
@@ -120,7 +120,7 @@ app.get('/users/subscribe/:id',async(req,res)=>{
           })
 
 // get subscribe user
-app.get('/users/premium', async (req, res) => {
+app.get('/users/premium', verifyToken,async (req, res) => {
   try {
     const premiumUsers = await userCollection.find({ premiumTaken: { $exists: true } }).toArray();
     res.send(premiumUsers);
@@ -131,13 +131,8 @@ app.get('/users/premium', async (req, res) => {
 });
 
 
-
-
-
-
-
 // approve a article
-app.patch('/article/approve/:id',async(req,res)=>{
+app.patch('/article/approve/:id',verifyToken,async(req,res)=>{
   const id = req.params.id;
   const filter ={ _id : new ObjectId(id)}
   const updateDoc = {
@@ -201,13 +196,11 @@ app.get('/articles/declined/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-``
-
 
 
 // promoted to premium
 
-app.patch('/article/premium/:id',async(req,res)=>{
+app.patch('/article/premium/:id', async(req,res)=>{
   const id = req.params.id;
 
   const filter ={ _id : new ObjectId(id)}
@@ -251,7 +244,7 @@ app.get('/publishers',async (req,res)=>{
   })
 
 // aricle by id
-app.get('/article/:id',async(req,res)=>{
+app.get('/article/:id',verifyToken,async(req,res)=>{
 const id = req.params.id
 const result = await articleCollection.findOne({_id:new ObjectId(id)})
 res.send(result)
@@ -263,6 +256,20 @@ app.delete('/article/:id',async (req,res)=> {
   const result = await articleCollection.deleteOne({_id: new ObjectId(id)})
   res.send(result)
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // article update title
 app.put("/article/:id", async (req, res) => {
   const id = {_id:new ObjectId(req.params.id)}
@@ -305,30 +312,7 @@ app.get('/article',async(req,res)=>{
 }
 })
 
-// all approved article
-// app.get('/article/approved',async(req,res)=>{
-//   try{
-//     const {search,publisher,tags}=req.query;
 
-//     let filter = { isApproved: true };
-//     if (search) {
-//       filter.title = { $regex: new RegExp(search, 'i') };
-//     }
-//     if (publisher) {
-//       filter.publisher = publisher;
-//     }
-//     if (tags) {
-//       filter.tags = { $in: Array.isArray(tags) ? tags : [tags] };
-//     }
-//     // console.log('Filter:', filter);
-//     const result = await articleCollection.find(filter).toArray();
-//     // console.log("mongodb query",result);
-//     res.send(result);
-// }catch(error){
-//   console.error("error fetching",error);
-//   res.status(500).json({error:"internal server error"})
-// }
-// })
 // view per article
 app.put('/article/:id/view', async (req, res) => {
   try {
